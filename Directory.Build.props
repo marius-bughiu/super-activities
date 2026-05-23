@@ -30,12 +30,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Base (stable) version. Debug packs append an auto-incrementing prerelease suffix
-         (-alpha.<seconds since 2020-01-01 UTC>) supplied ONCE by pack.ps1 as a single global
-         -p:VersionSuffix, so every package and the inter-package dependency versions share the exact
-         same value. Do NOT compute a per-project timestamp here, or the dependency would point at a
-         version that was never produced. A raw `dotnet build`/`dotnet pack` yields a clean 1.0.1. -->
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <!-- Versioning is driven by MinVer (see Directory.Build.targets). Each packable project sets its
+         own <MinVerTagPrefix> so the three packages version and release INDEPENDENTLY from their own
+         git tags, e.g. `M.Super.Activities-v1.2.0`, `M.Super.Extensions-v1.1.0`. On a tagged commit the
+         version is exactly the tag; in between it auto-increments to the next patch -alpha.0.<height>.
+         Floor untagged/CI builds at 1.0 so a pre-tag build never appears to go backwards to 0.x.
+         For a quick local feed pack with a single shared version, pack.ps1 passes -p:MinVerVersionOverride. -->
+    <MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
   </PropertyGroup>
 
 </Project>

@@ -1,9 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Super.Extensions</PackageId>
+    <PackageId>M.Super.Extensions</PackageId>
     <Description>Supercharge your UiPath automations with cross-cutting extensions. Add telemetry, logging and auditing across every activity in a workflow from a single drop-in activity — with design-time project settings and a built-in Workflow Analyzer rule. The foundation behind the Super activity extensions.</Description>
     <PackageTags>UiPathActivities UiPath RPA automation workflow activities extensions extensibility telemetry logging auditing monitoring observability</PackageTags>
+    <!-- Released independently by pushing a tag like `M.Super.Extensions-v1.2.0`. -->
+    <MinVerTagPrefix>M.Super.Extensions-v</MinVerTagPrefix>
+  </PropertyGroup>
+
+  <!-- When a sibling package that ProjectReferences this one (e.g. M.Super.AppInsights.Activities) is
+       packed, the release pipeline pins the emitted dependency to the last *published* M.Super.Extensions
+       version by passing -p:SuperExtensionsPackageVersion=<x>. That keeps the cross-package dependency
+       pointing at a real, restorable version instead of MinVer's in-between prerelease. Unset (local/dev
+       and this project's own release) → MinVer drives the version from the M.Super.Extensions-v tag. -->
+  <PropertyGroup Condition="'$(SuperExtensionsPackageVersion)' != ''">
+    <MinVerVersionOverride>$(SuperExtensionsPackageVersion)</MinVerVersionOverride>
   </PropertyGroup>
 
   <ItemGroup>

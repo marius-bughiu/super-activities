@@ -20,13 +20,13 @@ Stream every activity your robot runs straight to **Azure Application Insights**
 
 | Package | What it gives you |
 | --- | --- |
-| **Super.AppInsights.Activities** | Azure Application Insights monitoring for UiPath — automatic per-activity telemetry. |
-| **Super.Extensions** | The extensibility framework: the **Super Initialize** activity, runtime dispatch, auto-discovery, and the analyzer rule. |
-| **Super.Activities** | Handy building-block activities for everyday automation. |
+| **M.Super.AppInsights.Activities** | Azure Application Insights monitoring for UiPath — automatic per-activity telemetry. |
+| **M.Super.Extensions** | The extensibility framework: the **Super Initialize** activity, runtime dispatch, auto-discovery, and the analyzer rule. |
+| **M.Super.Activities** | Handy building-block activities for everyday automation. |
 
 ## Quick start
 
-1. Install **Super.AppInsights.Activities** (it brings **Super.Extensions** with it). Enable *Include Prerelease*.
+1. Install **M.Super.AppInsights.Activities** (it brings **M.Super.Extensions** with it). Enable *Include Prerelease*.
 2. Drop **Super Initialize** as the first activity in **Main**.
 3. Open **Project Settings → App Insights** and paste your **Instrumentation Key** (a key or full connection string). Optionally enable **Capture arguments**.
 4. Run. Open Application Insights and query your activity stream:

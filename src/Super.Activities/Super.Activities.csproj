@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Super.Activities</PackageId>
+    <PackageId>M.Super.Activities</PackageId>
     <Description>Essential building-block activities for UiPath — simple, reliable helpers that speed up everyday RPA automation.</Description>
     <PackageTags>UiPathActivities UiPath RPA automation workflow activities productivity helpers</PackageTags>
+    <!-- Released independently by pushing a tag like `M.Super.Activities-v1.2.0`. -->
+    <MinVerTagPrefix>M.Super.Activities-v</MinVerTagPrefix>
   </PropertyGroup>
 
   <ItemGroup>

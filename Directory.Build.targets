@@ -5,6 +5,7 @@
   <PropertyGroup Condition="'$(IsPackable)' != 'false'">
     <PackageIcon>super-activities.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsPackable)' != 'false'">
@@ -12,6 +13,12 @@
           Condition="Exists('$(RepoAssetsDir)super-activities.png')" />
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false"
           Condition="Exists('$(MSBuildThisFileDirectory)README.md')" />
+  </ItemGroup>
+
+  <!-- MinVer derives the version from git tags. Each packable project sets its own <MinVerTagPrefix>
+       so the packages version independently. Build-only dependency (no runtime/transitive footprint). -->
+  <ItemGroup Condition="'$(IsPackable)' != 'false'">
+    <PackageReference Include="MinVer" Version="5.0.0" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,202 @@
+name: Release
+
+# Each package is released INDEPENDENTLY by pushing a tag whose prefix selects the package and whose
+# suffix is the version (MinVer reads it via the project's <MinVerTagPrefix>):
+#
+#   M.Super.Activities-v1.2.0
+#   M.Super.Extensions-v1.1.0
+#   M.Super.AppInsights.Activities-v2.0.1
+#
+# The pushed tag triggers a build of the whole solution (tests must pass), then packs and publishes ONLY
+# the tagged package to NuGet.org via trusted publishing, and finally creates a matching GitHub release.
+#
+# workflow_dispatch is a safe dry run: it builds and packs the chosen package and uploads the .nupkg as a
+# workflow artifact, but does NOT publish (publish/release jobs are gated on a tag push).
+
+on:
+  push:
+    tags:
+      - 'M.Super.Activities-v*'
+      - 'M.Super.Extensions-v*'
+      - 'M.Super.AppInsights.Activities-v*'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to build (dry run — uploads a .nupkg artifact, does not publish)
+        required: true
+        type: choice
+        options:
+          - M.Super.Activities
+          - M.Super.Extensions
+          - M.Super.AppInsights.Activities
+
+env:
+  NuGetDirectory: ${{ github.workspace }}/nuget
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      package: ${{ steps.resolve.outputs.package }}
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # MinVer needs full history + tags to map the pushed tag to a version.
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: Resolve target package
+        id: resolve
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            pkg="${{ inputs.package }}"
+            ver=""   # dry run: MinVer computes a prerelease from history
+          else
+            tag="${GITHUB_REF_NAME}"      # e.g. M.Super.AppInsights.Activities-v1.2.0
+            pkg="${tag%-v*}"              # -> M.Super.AppInsights.Activities
+            ver="${tag##*-v}"            # -> 1.2.0
+          fi
+          # PackageId carries an "M." prefix; the project folder/assembly does not.
+          name="${pkg#M.}"
+          proj="src/${name}/${name}.csproj"
+          if [ ! -f "$proj" ]; then
+            echo "::error::No project found for package '$pkg' (looked for '$proj')." >&2
+            exit 1
+          fi
+          {
+            echo "package=$pkg"
+            echo "version=$ver"
+            echo "project=$proj"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved package=$pkg version=${ver:-<minver>} project=$proj"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: Compute cross-package dependency pin
+        id: pin
+        run: |
+          set -euo pipefail
+          args=""
+          # M.Super.AppInsights.Activities ProjectReferences M.Super.Extensions. Pin the emitted package
+          # dependency to the last PUBLISHED M.Super.Extensions version (its latest tag) so consumers
+          # restore a real version, not MinVer's in-between prerelease. See Super.Extensions.csproj.
+          if [ "${{ steps.resolve.outputs.package }}" = "M.Super.AppInsights.Activities" ]; then
+            ext_tag="$(git tag --list 'M.Super.Extensions-v*' --sort=-v:refname | head -n1 || true)"
+            if [ -z "$ext_tag" ]; then
+              echo "::error::M.Super.AppInsights.Activities depends on M.Super.Extensions, but no 'M.Super.Extensions-v*' tag exists. Release M.Super.Extensions first." >&2
+              exit 1
+            fi
+            ext_ver="${ext_tag#M.Super.Extensions-v}"
+            echo "Pinning M.Super.Extensions dependency to $ext_ver (from tag $ext_tag)."
+            args="-p:SuperExtensionsPackageVersion=$ext_ver"
+          fi
+          echo "args=$args" >> "$GITHUB_OUTPUT"
+
+      - name: Pack
+        run: >-
+          dotnet pack ${{ steps.resolve.outputs.project }}
+          --no-restore --configuration Release
+          --output "${{ env.NuGetDirectory }}"
+          ${{ steps.pin.outputs.args }}
+
+      - name: Verify packed version matches the tag
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          expected="${{ steps.resolve.outputs.package }}.${{ steps.resolve.outputs.version }}.nupkg"
+          if [ ! -f "${{ env.NuGetDirectory }}/$expected" ]; then
+            echo "::error::Expected '$expected' was not produced — the MinVer version does not match the tag. Is the tag on the commit you intend to release?" >&2
+            echo "Produced:" >&2
+            ls -1 "${{ env.NuGetDirectory }}" >&2
+            exit 1
+          fi
+          echo "OK: produced $expected"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nuget
+          if-no-files-found: error
+          retention-days: 7
+          path: ${{ env.NuGetDirectory }}/*.nupkg
+
+  publish:
+    # Publish to NuGet.org only for real tag pushes (workflow_dispatch stays a dry run).
+    if: github.event_name == 'push'
+    needs: [ build ]
+    runs-on: windows-latest
+    environment: nuget-publish
+    permissions:
+      id-token: write   # required for NuGet trusted publishing (OIDC)
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget
+          path: ${{ env.NuGetDirectory }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Authenticate to NuGet.org via trusted publishing
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: marius.bughiu
+
+      - name: Publish to NuGet.org
+        run: |
+          set -euo pipefail
+          for pkg in "${{ env.NuGetDirectory }}"/*.nupkg; do
+            dotnet nuget push "$pkg" \
+              --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
+
+  github-release:
+    if: github.event_name == 'push'
+    needs: [ publish ]
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget
+          path: ${{ env.NuGetDirectory }}
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --verify-tag \
+            --generate-notes \
+            "${{ env.NuGetDirectory }}"/*.nupkg

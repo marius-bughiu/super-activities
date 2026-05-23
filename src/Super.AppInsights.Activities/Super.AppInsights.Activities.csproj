@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Super.AppInsights.Activities</PackageId>
+    <PackageId>M.Super.AppInsights.Activities</PackageId>
     <Description>Azure Application Insights monitoring for UiPath. Automatically track every activity in your automation and stream rich execution events — activity name, status, duration and arguments — to Application Insights for real-time dashboards, alerting and end-to-end observability. Drop in one activity; no per-activity wiring.</Description>
     <PackageTags>UiPathActivities UiPath RPA automation workflow activities ApplicationInsights AppInsights Azure monitoring telemetry observability logging diagnostics</PackageTags>
+    <!-- Released independently by pushing a tag like `M.Super.AppInsights.Activities-v1.2.0`. -->
+    <MinVerTagPrefix>M.Super.AppInsights.Activities-v</MinVerTagPrefix>
   </PropertyGroup>
 
   <ItemGroup>
