@@ -1,0 +1,14 @@
+{
+  "AssemblyRelativePath": "Super.Activities.dll",
+  "Activities": [
+    {
+      "FullName": "Super.Activities.WriteMessage",
+      "ShortName": "WriteMessage",
+      "DisplayNameKey": "Write Message",
+      "DescriptionKey": "Writes a message to the console.",
+      "CategoryKey": "Super",
+      "IconKey": "super-activities.png",
+      "ViewModelType": "Super.Activities.ViewModels.WriteMessageViewModel"
+    }
+  ]
+}

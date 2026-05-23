@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Super.AppInsights.Activities</PackageId>
+    <Description>Azure Application Insights monitoring for UiPath. Automatically track every activity in your automation and stream rich execution events — activity name, status, duration and arguments — to Application Insights for real-time dashboards, alerting and end-to-end observability. Drop in one activity; no per-activity wiring.</Description>
+    <PackageTags>UiPathActivities UiPath RPA automation workflow activities ApplicationInsights AppInsights Azure monitoring telemetry observability logging diagnostics</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0" />
+    <!-- Needed for the System.Activities types in the IActivityExtension surface. Private (host-supplied);
+         also required explicitly because Super.Extensions marks the workflow reference private so it does
+         not flow transitively. -->
+    <PackageReference Include="UiPath.Workflow.Runtime" Version="$(UiPathWorkflowVersion)" PrivateAssets="All" />
+    <!-- UiPath Studio design API (project settings registration) + runtime settings reader.
+         Private/host-supplied, matching the UiPath.Examples.Activities pattern. -->
+    <PackageReference Include="UiPath.Activities.Api" Version="$(UiPathActivitiesApiVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Super.Extensions\Super.Extensions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Super.AppInsights.Activities.Tests" />
+  </ItemGroup>
+
+</Project>

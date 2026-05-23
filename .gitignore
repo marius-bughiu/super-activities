@@ -1,0 +1,43 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+artifacts/
+[Dd]ebug/
+[Rr]elease/
+
+# NuGet packages / restore
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.assets.json
+packages/
+.nuget/
+
+# Test results
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+*.coverage.xml
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+
+# Build logs
+*.binlog
+*.log
+
+# Local tooling / scratch
+.claude/settings.local.json
+.iconpreview/
+_*probe*/
+
+# OS
+Thumbs.db
+.DS_Store

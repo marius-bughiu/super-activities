@@ -1,0 +1,17 @@
+<Project>
+
+  <!-- Imported after each project, so $(IsPackable) is known. Applies the shared NuGet icon + readme to
+       the shippable packages only (test projects / tools set IsPackable=false). -->
+  <PropertyGroup Condition="'$(IsPackable)' != 'false'">
+    <PackageIcon>super-activities.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' != 'false'">
+    <None Include="$(RepoAssetsDir)super-activities.png" Pack="true" PackagePath="\" Visible="false"
+          Condition="Exists('$(RepoAssetsDir)super-activities.png')" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false"
+          Condition="Exists('$(MSBuildThisFileDirectory)README.md')" />
+  </ItemGroup>
+
+</Project>

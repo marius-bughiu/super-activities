@@ -1,0 +1,14 @@
+{
+  "AssemblyRelativePath": "Super.Extensions.dll",
+  "Activities": [
+    {
+      "FullName": "Super.Extensions.SuperInitialize",
+      "ShortName": "SuperInitialize",
+      "DisplayNameKey": "Super Initialize",
+      "DescriptionKey": "Step right up - this is where the magic starts.",
+      "CategoryKey": "Super",
+      "IconKey": "super-activities.png",
+      "ViewModelType": "Super.Extensions.ViewModels.SuperInitializeViewModel"
+    }
+  ]
+}

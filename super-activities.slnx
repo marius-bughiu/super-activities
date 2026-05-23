@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Super.Activities/Super.Activities.csproj" />
+    <Project Path="src/Super.AppInsights.Activities/Super.AppInsights.Activities.csproj" />
+    <Project Path="src/Super.Extensions/Super.Extensions.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Super.AppInsights.Activities.Tests/Super.AppInsights.Activities.Tests.csproj" />
+    <Project Path="tests/Super.Extensions.Tests/Super.Extensions.Tests.csproj" />
+  </Folder>
+</Solution>

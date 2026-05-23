@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Super.Extensions</PackageId>
+    <Description>Supercharge your UiPath automations with cross-cutting extensions. Add telemetry, logging and auditing across every activity in a workflow from a single drop-in activity — with design-time project settings and a built-in Workflow Analyzer rule. The foundation behind the Super activity extensions.</Description>
+    <PackageTags>UiPathActivities UiPath RPA automation workflow activities extensions extensibility telemetry logging auditing monitoring observability</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UiPath.Workflow brings UiPath.Workflow.Runtime + the bundled System.Xaml
+         (ActivityXamlServices, XamlSchemaContext, AttachablePropertyServices).
+         Private: the host supplies the workflow runtime, so it is not a package dependency. -->
+    <PackageReference Include="UiPath.Workflow" Version="$(UiPathWorkflowVersion)" PrivateAssets="All" />
+    <!-- Studio design API (the analyzer rule) + runtime API (IExecutorRuntime / project settings).
+         Private/host-supplied, matching the UiPath.Examples.Activities pattern. -->
+    <PackageReference Include="UiPath.Activities.Api" Version="$(UiPathActivitiesApiVersion)" PrivateAssets="All" />
+    <!-- Modern Studio renders activity properties from a DesignPropertiesViewModel. -->
+    <PackageReference Include="System.Activities.ViewModels" Version="$(SystemActivitiesViewModelsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Super.Extensions.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tells the modern UiPath Studio Activities panel which activities this package contributes. -->
+    <None Remove="Resources\ActivitiesMetadata.json" />
+    <EmbeddedResource Include="Resources\ActivitiesMetadata.json" />
+    <!-- Shared brand icon used as the toolbox activity icon (referenced by IconKey). -->
+    <EmbeddedResource Include="$(RepoAssetsDir)super-activities.png" Link="Resources\Icons\super-activities.png" />
+  </ItemGroup>
+
+</Project>

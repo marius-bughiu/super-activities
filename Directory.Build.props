@@ -1,0 +1,41 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <!-- net6.0 matches the CoreWF packages; silence the EOL advisory since the target is deliberate. -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- CoreWF / UiPath.Workflow brings the runtime + bundled System.Xaml.
+         net6.0 (NOT net6.0-windows) keeps the System.Xaml identity coming from the
+         package, avoiding a clash with the WindowsDesktop System.Xaml.
+         IMPORTANT: use the UiPath-Official feed build (System.Activities AssemblyVersion 6.0.0.0)
+         that ships with Studio, NOT the nuget.org 6.0.3 (AssemblyVersion 6.0.3.0) which Studio
+         cannot load. This version pairs with UiPath.Activities.Api 24.10.1 / Studio 24.10. -->
+    <UiPathWorkflowVersion>6.0.0-20240401-07</UiPathWorkflowVersion>
+    <!-- UiPath Studio/Robot design + runtime API (project settings, etc). From the UiPath-Official feed. -->
+    <UiPathActivitiesApiVersion>24.10.1</UiPathActivitiesApiVersion>
+    <!-- Modern Studio designer view-models (renders activity properties in the card). -->
+    <SystemActivitiesViewModelsVersion>1.0.0-20250625.2</SystemActivitiesViewModelsVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Shared brand assets (icon + readme) used for NuGet packaging and activity icons. -->
+    <RepoAssetsDir>$(MSBuildThisFileDirectory)assets\</RepoAssetsDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Base (stable) version. Debug packs append an auto-incrementing prerelease suffix
+         (-alpha.<seconds since 2020-01-01 UTC>) supplied ONCE by pack.ps1 as a single global
+         -p:VersionSuffix, so every package and the inter-package dependency versions share the exact
+         same value. Do NOT compute a per-project timestamp here, or the dependency would point at a
+         version that was never produced. A raw `dotnet build`/`dotnet pack` yields a clean 1.0.1. -->
+    <VersionPrefix>1.0.1</VersionPrefix>
+  </PropertyGroup>
+
+</Project>

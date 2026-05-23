@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Super.Activities</PackageId>
+    <Description>Essential building-block activities for UiPath — simple, reliable helpers that speed up everyday RPA automation.</Description>
+    <PackageTags>UiPathActivities UiPath RPA automation workflow activities productivity helpers</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Private: the host (Studio/Robot) supplies the workflow runtime, so it is not a package dependency. -->
+    <PackageReference Include="UiPath.Workflow.Runtime" Version="$(UiPathWorkflowVersion)" PrivateAssets="All" />
+    <!-- Modern Studio renders activity properties from a DesignPropertiesViewModel. -->
+    <PackageReference Include="System.Activities.ViewModels" Version="$(SystemActivitiesViewModelsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tells the modern UiPath Studio Activities panel which activities this package contributes. -->
+    <None Remove="Resources\ActivitiesMetadata.json" />
+    <EmbeddedResource Include="Resources\ActivitiesMetadata.json" />
+    <!-- Shared brand icon used as the toolbox activity icon (referenced by IconKey). -->
+    <EmbeddedResource Include="$(RepoAssetsDir)super-activities.png" Link="Resources\Icons\super-activities.png" />
+  </ItemGroup>
+
+</Project>
