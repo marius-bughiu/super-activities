@@ -77,6 +77,19 @@ public sealed class AppInsightsExtensionTests : IDisposable
     }
 
     [Fact]
+    public void SendsNothing_WhenDisabled()
+    {
+        var channel = new StubTelemetryChannel();
+        AppInsights.Register(
+            new AppInsightsSettings { InstrumentationKey = "x", Enabled = false },
+            CreateConfig(channel));
+
+        Run(new Sequence { Activities = { new WriteMessage { DisplayName = "A", Message = new InArgument<string>("a") } } });
+
+        Assert.Empty(channel.Sent.OfType<EventTelemetry>());
+    }
+
+    [Fact]
     public void Dormant_WhenNoKeyConfigured()
     {
         // No key -> the extension constructs (and flushes) without throwing, so auto-discovery is safe.

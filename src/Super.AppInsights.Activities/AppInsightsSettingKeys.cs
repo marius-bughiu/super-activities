@@ -17,4 +17,10 @@ public static class AppInsightsSettingKeys
 
     /// <summary>Whether to include each activity's argument values in the telemetry events.</summary>
     public const string CaptureArguments = "Super.AppInsights.CaptureArguments";
+
+    /// <summary>Whether telemetry is sent at all. Defaults to <c>true</c>.</summary>
+    public const string Enabled = "Super.AppInsights.Enabled";
+
+    /// <summary>Name of the custom event emitted per activity. Defaults to "Activity".</summary>
+    public const string EventName = "Super.AppInsights.EventName";
 }

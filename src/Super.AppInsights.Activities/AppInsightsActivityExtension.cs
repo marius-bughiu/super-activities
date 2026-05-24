@@ -88,9 +88,9 @@ public sealed class AppInsightsActivityExtension : IActivityExtension, IDisposab
 
     public void OnAfterExecute(ExtensionExecutionContext context)
     {
-        if (_client is null)
+        if (_client is null || !_settings.Enabled)
         {
-            return; // dormant (no instrumentation key)
+            return; // dormant (no instrumentation key, or telemetry disabled)
         }
 
         var properties = new Dictionary<string, string>

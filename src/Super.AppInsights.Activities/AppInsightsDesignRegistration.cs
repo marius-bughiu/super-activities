@@ -31,10 +31,26 @@ public sealed class AppInsightsDesignRegistration : IRegisterWorkflowDesignApi
 
         settings.AddSetting(category, new SingleValueEditorDescription<bool>
         {
+            Key = AppInsightsSettingKeys.Enabled,
+            Label = "Enabled",
+            Description = "Whether Application Insights telemetry is sent.",
+            DefaultValue = true,
+        });
+
+        settings.AddSetting(category, new SingleValueEditorDescription<bool>
+        {
             Key = AppInsightsSettingKeys.CaptureArguments,
             Label = "Capture arguments",
             Description = "Include each activity's argument values in the telemetry events (more overhead).",
             DefaultValue = false,
+        });
+
+        settings.AddSetting(category, new SingleValueEditorDescription<string>
+        {
+            Key = AppInsightsSettingKeys.EventName,
+            Label = "Event name",
+            Description = "Name of the custom event emitted per activity.",
+            DefaultValue = "Activity",
         });
     }
 }

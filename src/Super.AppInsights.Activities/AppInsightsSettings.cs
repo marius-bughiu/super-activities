@@ -12,6 +12,9 @@ public sealed class AppInsightsSettings
     /// <summary>Application Insights instrumentation key.</summary>
     public string? InstrumentationKey { get; set; }
 
+    /// <summary>Whether telemetry is sent at all. Defaults to <c>true</c>.</summary>
+    public bool Enabled { get; set; } = true;
+
     /// <summary>Include each activity's argument values in the telemetry events.</summary>
     public bool CaptureArguments { get; set; }
 
@@ -27,19 +30,27 @@ public sealed class AppInsightsSettings
     {
         ArgumentNullException.ThrowIfNull(reader);
 
-        return new AppInsightsSettings
+        var settings = new AppInsightsSettings
         {
             InstrumentationKey = reader.TryGetValue(AppInsightsSettingKeys.InstrumentationKey, out string value) ? value : null,
-            CaptureArguments = ReadBool(reader, AppInsightsSettingKeys.CaptureArguments),
+            Enabled = ReadBool(reader, AppInsightsSettingKeys.Enabled, defaultValue: true),
+            CaptureArguments = ReadBool(reader, AppInsightsSettingKeys.CaptureArguments, defaultValue: false),
         };
+
+        if (reader.TryGetValue(AppInsightsSettingKeys.EventName, out string eventName) && !string.IsNullOrWhiteSpace(eventName))
+        {
+            settings.EventName = eventName;
+        }
+
+        return settings;
     }
 
-    private static bool ReadBool(IActivitiesSettingsReader reader, string key)
+    private static bool ReadBool(IActivitiesSettingsReader reader, string key, bool defaultValue)
     {
         if (reader.TryGetValue(key, out bool b))
         {
             return b;
         }
-        return reader.TryGetValue(key, out string s) && bool.TryParse(s, out var parsed) && parsed;
+        return reader.TryGetValue(key, out string s) && bool.TryParse(s, out var parsed) ? parsed : defaultValue;
     }
 }
