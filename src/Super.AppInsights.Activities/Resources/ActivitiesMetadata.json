@@ -1,0 +1,14 @@
+{
+  "AssemblyRelativePath": "Super.AppInsights.Activities.dll",
+  "Activities": [
+    {
+      "FullName": "Super.AppInsights.Activities.TrackEvent",
+      "ShortName": "TrackEvent",
+      "DisplayNameKey": "Track Event",
+      "DescriptionKey": "Sends a custom Application Insights event with the given name and properties.",
+      "CategoryKey": "App Insights",
+      "IconKey": "super-activities.png",
+      "ViewModelType": "Super.AppInsights.Activities.ViewModels.TrackEventViewModel"
+    }
+  ]
+}

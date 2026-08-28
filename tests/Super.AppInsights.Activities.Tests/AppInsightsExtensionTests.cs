@@ -90,6 +90,68 @@ public sealed class AppInsightsExtensionTests : IDisposable
     }
 
     [Fact]
+    public void TrackEvent_SendsNamedEvent_WithSerializedProperties()
+    {
+        var channel = new StubTelemetryChannel();
+        AppInsights.Register(new AppInsightsSettings { InstrumentationKey = "x" }, CreateConfig(channel));
+
+        var props = new Dictionary<string, object>
+        {
+            ["OrderId"] = 42,
+            ["Customer"] = "Acme",
+            ["Lines"] = new[] { 1, 2, 3 },
+        };
+        var activity = new TrackEvent
+        {
+            EventName = new InArgument<string>("OrderPlaced"),
+            // A Dictionary can't be a Literal, so supply it via an expression (as Studio does at runtime).
+            Properties = new InArgument<Dictionary<string, object>>(_ => props),
+        };
+
+        Run(new Sequence { Activities = { activity } });
+
+        var evt = Assert.Single(channel.Sent.OfType<EventTelemetry>(), e => e.Name == "OrderPlaced");
+        Assert.Equal("42", evt.Properties["OrderId"]);
+        Assert.Equal("Acme", evt.Properties["Customer"]);
+        Assert.Equal("[1,2,3]", evt.Properties["Lines"]);
+    }
+
+    [Fact]
+    public void TrackEvent_SendsNothing_WhenDisabled()
+    {
+        var channel = new StubTelemetryChannel();
+        AppInsights.Register(new AppInsightsSettings { InstrumentationKey = "x", Enabled = false }, CreateConfig(channel));
+
+        var activity = new TrackEvent { EventName = new InArgument<string>("OrderPlaced") };
+        Run(new Sequence { Activities = { activity } });
+
+        Assert.DoesNotContain(channel.Sent.OfType<EventTelemetry>(), e => e.Name == "OrderPlaced");
+    }
+
+    [Fact]
+    public void SerializeProperties_StringifiesByValueKind()
+    {
+        var props = new Dictionary<string, object>
+        {
+            ["str"] = "hello",
+            ["num"] = 42,
+            ["flag"] = true,
+            ["obj"] = new { Id = 7, Name = "x" },
+            ["list"] = new[] { 1, 2, 3 },
+            ["nullVal"] = null!,
+        };
+
+        var result = AppInsightsActivityExtension.SerializeProperties(props)!;
+
+        Assert.Equal("hello", result["str"]);          // string passes through as-is
+        Assert.Equal("42", result["num"]);             // value type -> ToString
+        Assert.Equal("True", result["flag"]);          // value type -> ToString
+        Assert.Equal("{\"Id\":7,\"Name\":\"x\"}", result["obj"]); // reference type -> JSON
+        Assert.Equal("[1,2,3]", result["list"]);       // reference type -> JSON
+        Assert.Equal(string.Empty, result["nullVal"]); // null -> empty
+    }
+
+    [Fact]
     public void Dormant_WhenNoKeyConfigured()
     {
         // No key -> the extension constructs (and flushes) without throwing, so auto-discovery is safe.

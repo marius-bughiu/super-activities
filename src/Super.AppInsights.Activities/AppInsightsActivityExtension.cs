@@ -1,4 +1,6 @@
 using System.Activities;
+using System.Globalization;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Channel;
@@ -119,6 +121,70 @@ public sealed class AppInsightsActivityExtension : IActivityExtension, IDisposab
         if (context.Activity.Id == "1")
         {
             FlushAndWait();
+        }
+    }
+
+    /// <summary>
+    /// Sends a custom event with an explicit name and caller-supplied properties. Backs the
+    /// <see cref="TrackEvent"/> activity. The event name falls back to <see cref="AppInsightsSettings.EventName"/>
+    /// when empty. No-op when dormant (no instrumentation key) or disabled.
+    /// </summary>
+    public void TrackCustomEvent(string? eventName, IDictionary<string, object>? properties)
+    {
+        if (_client is null || !_settings.Enabled)
+        {
+            return; // dormant (no instrumentation key, or telemetry disabled)
+        }
+
+        var name = string.IsNullOrWhiteSpace(eventName) ? _settings.EventName : eventName;
+        _client.TrackEvent(name, SerializeProperties(properties));
+    }
+
+    /// <summary>
+    /// Converts caller-supplied property values to the string form App Insights stores. Strings and value
+    /// types use their (invariant-culture) string form; other reference types are JSON-serialized.
+    /// </summary>
+    internal static Dictionary<string, string>? SerializeProperties(IDictionary<string, object>? properties)
+    {
+        if (properties is null || properties.Count == 0)
+        {
+            return null;
+        }
+
+        var result = new Dictionary<string, string>(properties.Count);
+        foreach (var pair in properties)
+        {
+            result[pair.Key] = StringifyValue(pair.Value);
+        }
+        return result;
+    }
+
+    private static string StringifyValue(object? value)
+    {
+        switch (value)
+        {
+            case null:
+                return string.Empty;
+            case string s:
+                return s;
+        }
+
+        var type = value.GetType();
+        if (type.IsValueType)
+        {
+            // int, bool, DateTime, Guid, enum, decimal, ... - their own string form is the most useful.
+            return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
+        }
+
+        try
+        {
+            // Pass the runtime type so the actual object graph is serialized, not the static `object`.
+            return JsonSerializer.Serialize(value, type);
+        }
+        catch (Exception ex)
+        {
+            SuperRuntime.Log($"Track Event: could not JSON-serialize value of type {type.FullName}: {ex.Message}", System.Diagnostics.TraceEventType.Warning);
+            return value.ToString() ?? string.Empty;
         }
     }
 
